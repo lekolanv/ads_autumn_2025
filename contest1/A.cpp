@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
 void MergeOneArray(std::vector<std::pair<int, int>>& a, int l, int mid, int r) {
   int left = l;
@@ -34,7 +35,7 @@ void MergeSort(std::vector<std::pair<int, int>>& a, int l, int r) {
   }
 }
 
-int Podshet(std::vector<std::pair<int, int>>& a) {
+int ProcessSegments(std::vector<std::pair<int, int>>& a) {
   int c = 0;
   int curr_i = 0;
   for (int i = 1; i < (int)a.size(); i++) {
@@ -50,23 +51,21 @@ int Podshet(std::vector<std::pair<int, int>>& a) {
   return c;
 }
 
-int main() {
-  int n;
+int32_t main() {
+  int32_t n;
   std::cin >> n;
-  int m = n;
   std::vector<std::pair<int, int>> a;
-  while (n != 0) {
+  for (int i = 0; i < n; i++) {
     int a1;
     int a2;
     std::cin >> a1 >> a2;
     a.emplace_back(a1, a2);
-    n--;
   }
-  if (m > 0) {
-    MergeSort(a, 0, m - 1);
+  if (n > 0) {
+    MergeSort(a, 0, n - 1);
   }
-  int c = Podshet(a);
-  std::cout << m - c << "\n";
+  int c = ProcessSegments(a);
+  std::cout << n - c << "\n";
   for (const auto& p : a) {
     std::cout << p.first << " " << p.second << "\n";
   }
