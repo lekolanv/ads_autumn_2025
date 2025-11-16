@@ -26,12 +26,12 @@ std::pair<int, int> Combine(const std::pair<int, int>& a,
 }
 
 class SparseTable {
- private:
+private:
   std::vector<std::vector<std::pair<int, int>>> st_;
   std::vector<int> log_;
   int n_;
 
- public:
+public:
   SparseTable(const std::vector<int>& arr) {
     n_ = arr.size();
     log_.resize(n_ + 1);
@@ -50,7 +50,7 @@ class SparseTable {
       }
     }
   }
-  std::pair<int, int> Query(int l, int r) {
+  std::pair<int, int> Q(int l, int r) {
     int j = log_[r - l + 1];
     return Combine(st_[l][j], st_[r - (1 << j) + 1][j]);
   }
@@ -74,7 +74,7 @@ int main() {
     std::cin >> l >> r;
     l--;
     r--;
-    std::pair<int, int> result = st.Query(l, r);
+    std::pair<int, int> result = st.Q(l, r);
     std::cout << result.second << "\n";
   }
 }
