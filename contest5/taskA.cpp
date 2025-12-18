@@ -7,78 +7,108 @@ const int cSA = 11;
 struct Lnode {
   int value;
   Lnode* next;
+  Lnode() : value(0), next(nullptr) {}
   Lnode(int v) : value(v), next(nullptr) {}
 };
 
-struct HashTable {
-  static Lnode* table[cTableSize];
+template <typename Type>
+class Memory {
+ private:
+  static const long cMaxNodes = cTableSize * 10;
+  Type* nodes_array_;
+  long current_index_;
 
-  HashTable() {
-    for (long i = 0; i < cTableSize; ++i) {
-      table[i] = nullptr;
+ public:
+  Memory() : nodes_array_(new Type[cMaxNodes]), current_index_(0) {}
+
+  ~Memory() { delete[] nodes_array_; }
+
+  Type* Allocate(const Type& data) {
+    if (current_index_ >= cMaxNodes) {
+      return nullptr;
     }
+    Type* node = &nodes_array_[current_index_];
+    node->value = data.value;
+    node->next = nullptr;
+    current_index_++;
+    return node;
   }
+
+  void Deallocate(Type* /*node*/) {}
+};
+
+class HashTable {
+ private:
+  Lnode* table_[cTableSize];
+  Memory<Lnode>& memory_;
 
   static int Hash(int x) {
     unsigned int u = static_cast<unsigned int>(x);
     u *= cMult;
     u ^= u >> cSA;
-    return static_cast<int>(u % cTableSize);
+    return static_cast<int>(u & (cTableSize - 1));
   }
 
-  bool Contains(int x) {
-    (void)this;
+ public:
+  HashTable(Memory<Lnode>& memory) : memory_(memory) {
+    for (long i = 0; i < cTableSize; ++i) {
+      table_[i] = nullptr;
+    }
+  }
+
+  bool Contains(int x) const {
     int h = Hash(x);
-    int matches = 0;
-    Lnode* cur = table[h];
+    const Lnode* cur = table_[h];
     while (cur != nullptr) {
-      matches += static_cast<int>(cur->value == x);
+      if (cur->value == x) {
+        return true;
+      }
       cur = cur->next;
     }
-    return matches != 0;
+    return false;
   }
 
   void Insert(int x) {
-    (void)this;
     if (Contains(x)) {
       return;
     }
     int h = Hash(x);
-    Lnode* node = new Lnode(x);
-    node->next = table[h];
-    table[h] = node;
+    Lnode* node = memory_.Allocate(Lnode(x));
+    if (node == nullptr) {
+      return;
+    }
+    node->next = table_[h];
+    table_[h] = node;
   }
 
   void Remove(int x) {
-    (void)this;
     int h = Hash(x);
-    if (table[h] == nullptr) {
+    if (table_[h] == nullptr) {
       return;
     }
-    if (table[h]->value == x) {
-      Lnode* tmp = table[h];
-      table[h] = tmp->next;
-      delete tmp;
+    if (table_[h]->value == x) {
+      Lnode* tmp = table_[h];
+      table_[h] = tmp->next;
+      memory_.Deallocate(tmp);
       return;
     }
-    Lnode* cur = table[h];
+    Lnode* cur = table_[h];
     while (cur->next != nullptr && cur->next->value != x) {
       cur = cur->next;
     }
     if (cur->next != nullptr) {
       Lnode* tmp = cur->next;
       cur->next = tmp->next;
-      delete tmp;
+      memory_.Deallocate(tmp);
     }
   }
 };
 
-Lnode* HashTable::table[cTableSize];
-
 int main() {
   std::ios::sync_with_stdio(false);
   std::cin.tie(nullptr);
-  HashTable t;
+  Memory<Lnode> memory;
+  HashTable t(memory);
   int q;
   std::cin >> q;
   while (q != 0) {
