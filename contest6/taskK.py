@@ -19,7 +19,7 @@ n = int(input_data[0])
 a = list(map(int, input_data[1:n + 1]))
 tails = []
 tails_idx = []
-P = [-1] * n
+prev = [-1] * n
 for i, x in enumerate(a):
     idx = BinSearch(tails, x)
     if idx < len(tails):
@@ -29,12 +29,12 @@ for i, x in enumerate(a):
         tails.append(x)
         tails_idx.append(i)
     if idx > 0:
-        P[i] = tails_idx[idx - 1]
+        prev[i] = tails_idx[idx - 1]
 length = len(tails)
 print(length)
 res = []
 curr = tails_idx[-1]
 while curr != -1:
     res.append(curr + 1)
-    curr = P[curr]
+    curr = prev[curr]
 print(' '.join(map(str, res[::-1])))
